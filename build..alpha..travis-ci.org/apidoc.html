@@ -1,0 +1,476 @@
+<div class="apidocDiv">
+<style>
+/*csslint
+*/
+.apidocDiv {
+    background: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+}
+.apidocDiv a[href] {
+    color: #33f;
+    font-weight: bold;
+    text-decoration: none;
+}
+.apidocDiv a[href]:hover {
+    text-decoration: underline;
+}
+.apidocCodeCommentSpan {
+    background: #bbf;
+    color: #000;
+    display: block;
+}
+.apidocCodeKeywordSpan {
+    color: #d00;
+    font-weight: bold;
+}
+.apidocCodePre {
+    background: #eef;
+    border: 1px solid;
+    color: #777;
+    padding: 5px;
+    white-space: pre-wrap;
+}
+.apidocFooterDiv {
+    margin-top: 20px;
+    text-align: center;
+}
+.apidocModuleLi {
+    margin-top: 10px;
+}
+.apidocSectionDiv {
+    border-top: 1px solid;
+    margin-top: 20px;
+}
+.apidocSignatureSpan {
+    color: #777;
+    font-weight: bold;
+}
+</style>
+<h1>api documentation for
+    <a
+
+        href="https://github.com/uber/potter"
+
+    >potter (v4.0.3)</a>
+</h1>
+<h4>A command line for developer workflows, and generating applications and services</h4>
+<div class="apidocSectionDiv"><a
+    href="#apidoc.tableOfContents"
+    id="apidoc.tableOfContents"
+><h1>table of contents</h1></a><ol>
+
+    <li class="apidocModuleLi"><a href="#apidoc.module.potter">module potter</a><ol>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.potter.potter">
+            function <span class="apidocSignatureSpan"></span>potter
+            <span class="apidocSignatureSpan">(opts)</span>
+            </a>
+
+        </li>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.potter.callAsCli">
+            function <span class="apidocSignatureSpan">potter.</span>callAsCli
+            <span class="apidocSignatureSpan">()</span>
+            </a>
+
+        </li>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.potter.cli">
+            function <span class="apidocSignatureSpan">potter.</span>cli
+            <span class="apidocSignatureSpan">(opts)</span>
+            </a>
+
+        </li>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.potter.plugin">
+            function <span class="apidocSignatureSpan">potter.</span>plugin
+            <span class="apidocSignatureSpan">(opts, cb)</span>
+            </a>
+
+        </li>
+
+    </ol></li>
+
+    <li class="apidocModuleLi"><a href="#apidoc.module.potter.cli">module potter.cli</a><ol>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.potter.cli.cli">
+            function <span class="apidocSignatureSpan">potter.</span>cli
+            <span class="apidocSignatureSpan">(opts)</span>
+            </a>
+
+        </li>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.potter.cli.callAsCli">
+            function <span class="apidocSignatureSpan">potter.cli.</span>callAsCli
+            <span class="apidocSignatureSpan">()</span>
+            </a>
+
+        </li>
+
+    </ol></li>
+
+    <li class="apidocModuleLi"><a href="#apidoc.module.potter.plugin">module potter.plugin</a><ol>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.potter.plugin.plugin">
+            function <span class="apidocSignatureSpan">potter.</span>plugin
+            <span class="apidocSignatureSpan">(opts, cb)</span>
+            </a>
+
+        </li>
+
+        <li>
+
+            <a class="apidocElementLiA" href="#apidoc.element.potter.plugin.help">
+            function <span class="apidocSignatureSpan">potter.plugin.</span>help
+            <span class="apidocSignatureSpan">()</span>
+            </a>
+
+        </li>
+
+    </ol></li>
+
+</ol></div>
+
+<div class="apidocSectionDiv">
+<h1><a href="#apidoc.module.potter" id="apidoc.module.potter">module potter</a></h1>
+
+
+    <h2>
+        <a href="#apidoc.element.potter.potter" id="apidoc.element.potter.potter">
+        function <span class="apidocSignatureSpan"></span>potter
+        <span class="apidocSignatureSpan">(opts)</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">function main(opts) {
+    var extra = opts._.slice();
+
+    // command is --command or first arg
+    var command = opts.command || opts._.shift() || null;
+    var baseCommands = opts._commands;
+    baseCommands.aliases = {
+        version: &#x27;version&#x27;,
+        v: &#x27;version&#x27;,
+        h: &#x27;help&#x27;,
+        help: &#x27;help&#x27;,
+        __noArguments__: &#x27;help&#x27;
+    };
+    opts.cmd = &#x27;potter &#x27; + command;
+
+    //run priority commands first
+    if (priorityCmds.indexOf(command) !== -1) {
+        if (callCommand()) return;
+    }
+
+    //run all other commands with plugins to ensure enumeration
+    opts._commands = mergeCommands(pluginsDir, [&#x27;.bin&#x27;], opts._commands);
+    if (callCommand()) return;
+
+    // new line for pretty.
+    console.log(&#x27;&#x27;);
+
+    console.error(chalk.red(&#x27;ERR:&#x27;),
+        &#x27;command&#x27;,
+        chalk.red(opts.cmd +
+            (opts.enum ? &#x27; --enum=&#x27; + opts.enum : &#x27;&#x27;)),
+        &#x27;not found&#x27;);
+
+    process.exit(1);
+
+    function callCommand() {
+        var fn = getCommand(baseCommands, command, {
+            expert: opts.expert,
+            argv: extend(opts, {
+                _: extra
+            })
+        });
+
+        if (fn) {
+            var handled = runCommand(fn, [opts, defaultPrint(command)], {
+                argv: opts
+            });
+            return handled;
+        }
+    }
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    </ul>
+
+
+
+    <h2>
+        <a href="#apidoc.element.potter.callAsCli" id="apidoc.element.potter.callAsCli">
+        function <span class="apidocSignatureSpan">potter.</span>callAsCli
+        <span class="apidocSignatureSpan">()</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">function callAsCli() {
+    var argv = parseArgs(process.argv.slice(2), {
+        boolean: [&#x27;expert&#x27;, &#x27;dry&#x27;, &#x27;damp&#x27;]
+    });
+    argv.potterVersion = require(&#x27;../package.json&#x27;).version;
+
+    //merge builtsin first
+    argv._commands = mergeCommands(__dirname, [&#x27;lib&#x27;, &#x27;cli-deprecated.js&#x27;]);
+    main(argv);
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+var chalk = require(&#x27;chalk&#x27;);
+
+console.log(chalk.red(&#x27;WARNING&#x27;) + &#x27;: &#x27; + chalk.yellow(&#x27;playdoh&#x27;) +
+            &#x27; is deprecated please use &#x27; +
+            chalk.yellow(&#x27;potter&#x27;));
+
+cli.<span class="apidocCodeKeywordSpan">callAsCli</span>();
+...</pre></li>
+    </ul>
+
+
+
+    <h2>
+        <a href="#apidoc.element.potter.cli" id="apidoc.element.potter.cli">
+        function <span class="apidocSignatureSpan">potter.</span>cli
+        <span class="apidocSignatureSpan">(opts)</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">function main(opts) {
+    var extra = opts._.slice();
+
+    // command is --command or first arg
+    var command = opts.command || opts._.shift() || null;
+    var baseCommands = opts._commands;
+    baseCommands.aliases = {
+        version: &#x27;version&#x27;,
+        v: &#x27;version&#x27;,
+        h: &#x27;help&#x27;,
+        help: &#x27;help&#x27;,
+        __noArguments__: &#x27;help&#x27;
+    };
+    opts.cmd = &#x27;potter &#x27; + command;
+
+    //run priority commands first
+    if (priorityCmds.indexOf(command) !== -1) {
+        if (callCommand()) return;
+    }
+
+    //run all other commands with plugins to ensure enumeration
+    opts._commands = mergeCommands(pluginsDir, [&#x27;.bin&#x27;], opts._commands);
+    if (callCommand()) return;
+
+    // new line for pretty.
+    console.log(&#x27;&#x27;);
+
+    console.error(chalk.red(&#x27;ERR:&#x27;),
+        &#x27;command&#x27;,
+        chalk.red(opts.cmd +
+            (opts.enum ? &#x27; --enum=&#x27; + opts.enum : &#x27;&#x27;)),
+        &#x27;not found&#x27;);
+
+    process.exit(1);
+
+    function callCommand() {
+        var fn = getCommand(baseCommands, command, {
+            expert: opts.expert,
+            argv: extend(opts, {
+                _: extra
+            })
+        });
+
+        if (fn) {
+            var handled = runCommand(fn, [opts, defaultPrint(command)], {
+                argv: opts
+            });
+            return handled;
+        }
+    }
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    </ul>
+
+
+
+    <h2>
+        <a href="#apidoc.element.potter.plugin" id="apidoc.element.potter.plugin">
+        function <span class="apidocSignatureSpan">potter.</span>plugin
+        <span class="apidocSignatureSpan">(opts, cb)</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">function plugin(opts, cb) {
+    if(opts._.length === 0) {
+        halp();
+    } else if(Object.keys(commandMap).indexOf(opts._[0]) !== -1) {
+        var cmd = opts._[0];
+        opts._ = opts._.slice(1);
+        commandMap[cmd](opts, cb);
+    }
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    </ul>
+
+
+</div>
+
+<div class="apidocSectionDiv">
+<h1><a href="#apidoc.module.potter.cli" id="apidoc.module.potter.cli">module potter.cli</a></h1>
+
+
+    <h2>
+        <a href="#apidoc.element.potter.cli.cli" id="apidoc.element.potter.cli.cli">
+        function <span class="apidocSignatureSpan">potter.</span>cli
+        <span class="apidocSignatureSpan">(opts)</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">function main(opts) {
+    var extra = opts._.slice();
+
+    // command is --command or first arg
+    var command = opts.command || opts._.shift() || null;
+    var baseCommands = opts._commands;
+    baseCommands.aliases = {
+        version: &#x27;version&#x27;,
+        v: &#x27;version&#x27;,
+        h: &#x27;help&#x27;,
+        help: &#x27;help&#x27;,
+        __noArguments__: &#x27;help&#x27;
+    };
+    opts.cmd = &#x27;potter &#x27; + command;
+
+    //run priority commands first
+    if (priorityCmds.indexOf(command) !== -1) {
+        if (callCommand()) return;
+    }
+
+    //run all other commands with plugins to ensure enumeration
+    opts._commands = mergeCommands(pluginsDir, [&#x27;.bin&#x27;], opts._commands);
+    if (callCommand()) return;
+
+    // new line for pretty.
+    console.log(&#x27;&#x27;);
+
+    console.error(chalk.red(&#x27;ERR:&#x27;),
+        &#x27;command&#x27;,
+        chalk.red(opts.cmd +
+            (opts.enum ? &#x27; --enum=&#x27; + opts.enum : &#x27;&#x27;)),
+        &#x27;not found&#x27;);
+
+    process.exit(1);
+
+    function callCommand() {
+        var fn = getCommand(baseCommands, command, {
+            expert: opts.expert,
+            argv: extend(opts, {
+                _: extra
+            })
+        });
+
+        if (fn) {
+            var handled = runCommand(fn, [opts, defaultPrint(command)], {
+                argv: opts
+            });
+            return handled;
+        }
+    }
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    </ul>
+
+
+
+    <h2>
+        <a href="#apidoc.element.potter.cli.callAsCli" id="apidoc.element.potter.cli.callAsCli">
+        function <span class="apidocSignatureSpan">potter.cli.</span>callAsCli
+        <span class="apidocSignatureSpan">()</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">function callAsCli() {
+    var argv = parseArgs(process.argv.slice(2), {
+        boolean: [&#x27;expert&#x27;, &#x27;dry&#x27;, &#x27;damp&#x27;]
+    });
+    argv.potterVersion = require(&#x27;../package.json&#x27;).version;
+
+    //merge builtsin first
+    argv._commands = mergeCommands(__dirname, [&#x27;lib&#x27;, &#x27;cli-deprecated.js&#x27;]);
+    main(argv);
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">...
+
+var chalk = require(&#x27;chalk&#x27;);
+
+console.log(chalk.red(&#x27;WARNING&#x27;) + &#x27;: &#x27; + chalk.yellow(&#x27;playdoh&#x27;) +
+            &#x27; is deprecated please use &#x27; +
+            chalk.yellow(&#x27;potter&#x27;));
+
+cli.<span class="apidocCodeKeywordSpan">callAsCli</span>();
+...</pre></li>
+    </ul>
+
+
+</div>
+
+<div class="apidocSectionDiv">
+<h1><a href="#apidoc.module.potter.plugin" id="apidoc.module.potter.plugin">module potter.plugin</a></h1>
+
+
+    <h2>
+        <a href="#apidoc.element.potter.plugin.plugin" id="apidoc.element.potter.plugin.plugin">
+        function <span class="apidocSignatureSpan">potter.</span>plugin
+        <span class="apidocSignatureSpan">(opts, cb)</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">function plugin(opts, cb) {
+    if(opts._.length === 0) {
+        halp();
+    } else if(Object.keys(commandMap).indexOf(opts._[0]) !== -1) {
+        var cmd = opts._[0];
+        opts._ = opts._.slice(1);
+        commandMap[cmd](opts, cb);
+    }
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    </ul>
+
+
+
+    <h2>
+        <a href="#apidoc.element.potter.plugin.help" id="apidoc.element.potter.plugin.help">
+        function <span class="apidocSignatureSpan">potter.plugin.</span>help
+        <span class="apidocSignatureSpan">()</span>
+        </a>
+    </h2>
+    <ul>
+    <li>description and source-code<pre class="apidocCodePre">function halp() {
+    return printHelp(path.join(__dirname, &#x27;usage-plugin.md&#x27;));
+}</pre></li>
+    <li>example usage<pre class="apidocCodePre">n/a</pre></li>
+    </ul>
+
+
+</div>
+
+<div class="apidocFooterDiv">
+    [ this document was created with
+    <a href="https://github.com/kaizhu256/node-utility2" target="_blank">utility2</a>
+    ]
+</div>
+</div>
